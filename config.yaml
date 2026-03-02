@@ -2,7 +2,7 @@ language: ja
 audio_dir: audio
 transcripts_dir: transcripts
 model_path: models/ggml-base.bin
-whisper_exe: bin/whispercpp/whisper.exe
+whisper_exe: bin/whispercpp/whisper-cli.exe
 output_formats:
   - txt
   - json
