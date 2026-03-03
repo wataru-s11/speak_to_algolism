@@ -7,7 +7,7 @@ USBマイクで録音したWAVを `whisper.cpp` で文字起こしし、後段LL
 - `audio/` : 入力WAV
 - `transcripts/` : 出力（`<base>.txt` / `<base>.json`）
 - `models/` : `ggml` モデル格納
-- `bin/whispercpp/` : `whisper.exe` 格納
+- `bin/whispercpp/` : `whisper-cli.exe` 格納
 - `config.yaml` : 実行設定
 - `transcribe_batch.py` : 一括文字起こし
 - `utils.py` : 共通処理（設定読み込み・実行・ログ）
@@ -16,7 +16,7 @@ USBマイクで録音したWAVを `whisper.cpp` で文字起こしし、後段LL
 ## 事前準備
 
 1. `whisper.cpp` の実行ファイルを配置
-   - 例: `bin/whispercpp/whisper.exe`
+   - 例: `bin/whispercpp/whisper-cli.exe`
 2. `ggml` モデルを配置
    - 例: `models/ggml-base.bin`
 3. 必要に応じて設定を更新
