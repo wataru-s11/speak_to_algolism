@@ -63,3 +63,14 @@ python transcribe_batch.py --config config.yaml --skip-existing
   - `transcript_text`
   - `whisper_cmd`
   - `return_code`
+
+## 録音CLI（Windows想定）
+
+USBマイク録音用CLIを追加しました。
+
+```powershell
+python record_audio.py --list-devices
+python record_audio.py --seconds 600 --out audio/test_10min.wav
+```
+
+詳しい使い方は `docs/record_cli.md` を参照してください。
