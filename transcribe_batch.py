@@ -9,6 +9,7 @@ from typing import Any, Dict, List
 
 from utils import (
     ensure_directories,
+    decode_output_bytes,
     load_config,
     project_root_from_config,
     resolve_path,
@@ -63,7 +64,9 @@ def transcribe_file(
     try:
         result = run_command(command, logger)
         return_code = result.returncode
-        transcript_text = read_transcript_text(transcript_txt, fallback=result.stdout)
+        transcript_text = read_transcript_text(
+            transcript_txt, fallback=decode_output_bytes(result.stdout)
+        )
     except subprocess.CalledProcessError as exc:
         return_code = exc.returncode
         logger.exception("Transcription failed for '%s'", wav_path)
