@@ -8,6 +8,7 @@ from typing import Any, Dict, List
 
 
 LOGGER_NAME = "transcriber"
+LOG_OUTPUT_MAX_CHARS = 4000
 
 
 def setup_logger(verbose: bool = False) -> logging.Logger:
@@ -71,28 +72,56 @@ def ensure_directories(paths: List[Path]) -> None:
         path.mkdir(parents=True, exist_ok=True)
 
 
-def run_command(command: List[str], logger: logging.Logger) -> subprocess.CompletedProcess[str]:
+def decode_output_bytes(data: bytes) -> str:
+    """Decode process output safely for logs/UI without raising decode errors."""
+    if not data:
+        return ""
+
+    try:
+        return data.decode("utf-8")
+    except UnicodeDecodeError:
+        return data.decode("cp932", errors="replace")
+
+
+def _trim_for_log(text: str, limit: int = LOG_OUTPUT_MAX_CHARS) -> str:
+    if len(text) <= limit:
+        return text
+    return f"{text[:limit]}\n...<truncated {len(text) - limit} chars>"
+
+
+def run_command(command: List[str], logger: logging.Logger) -> subprocess.CompletedProcess[bytes]:
     logger.debug("Running command: %s", " ".join(command))
     result = subprocess.run(
         command,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
+        capture_output=True,
+        text=False,
         check=False,
     )
 
-    if result.stdout.strip():
-        logger.debug("stdout:\n%s", result.stdout)
-    if result.stderr.strip():
-        logger.debug("stderr:\n%s", result.stderr)
+    stdout_bytes = result.stdout if result.stdout is not None else b""
+    stderr_bytes = result.stderr if result.stderr is not None else b""
+    normalized = subprocess.CompletedProcess(
+        args=result.args,
+        returncode=result.returncode,
+        stdout=stdout_bytes,
+        stderr=stderr_bytes,
+    )
 
-    if result.returncode != 0:
-        logger.error("Command failed with return code %s", result.returncode)
+    stdout_text = decode_output_bytes(stdout_bytes)
+    stderr_text = decode_output_bytes(stderr_bytes)
+
+    if stdout_text.strip():
+        logger.debug("stdout:\n%s", _trim_for_log(stdout_text))
+    if stderr_text.strip():
+        logger.debug("stderr:\n%s", _trim_for_log(stderr_text))
+
+    if normalized.returncode != 0:
+        logger.error("Command failed with return code %s", normalized.returncode)
         raise subprocess.CalledProcessError(
-            returncode=result.returncode,
+            returncode=normalized.returncode,
             cmd=command,
-            output=result.stdout,
-            stderr=result.stderr,
+            output=stdout_bytes,
+            stderr=stderr_bytes,
         )
 
-    return result
+    return normalized
