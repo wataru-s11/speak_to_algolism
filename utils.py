@@ -76,11 +76,7 @@ def decode_output_bytes(data: bytes) -> str:
     """Decode process output safely for logs/UI without raising decode errors."""
     if not data:
         return ""
-
-    try:
-        return data.decode("utf-8")
-    except UnicodeDecodeError:
-        return data.decode("cp932", errors="replace")
+    return data.decode("utf-8", errors="replace")
 
 
 def _trim_for_log(text: str, limit: int = LOG_OUTPUT_MAX_CHARS) -> str:
